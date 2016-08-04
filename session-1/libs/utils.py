@@ -16,25 +16,20 @@ import os
 
 def imcrop_tosquare(img):
     """Make any image a square image.
-
     Parameters
     ----------
     img : np.ndarray
         Input image to crop, assumed at least 2d.
-
     Returns
     -------
     crop : np.ndarray
         Cropped image.
     """
-    if img.shape[0] > img.shape[1]:
-        extra = (img.shape[0] - img.shape[1]) // 2
-        crop = img[extra:-extra, :]
-    elif img.shape[1] > img.shape[0]:
-        extra = (img.shape[1] - img.shape[0]) // 2
-        crop = img[:, extra:-extra]
-    else:
-        crop = img
+    size = np.min(img.shape[:2])
+    extra = img.shape[:2] - size
+    crop = img
+    for i in np.flatnonzero(extra):
+        crop = np.take(crop, extra[i] // 2 + np.r_[:size], axis=i)
     return crop
 
 
@@ -100,6 +95,9 @@ def get_celeb_files():
 
         # create a string using the current loop counter
         f = '000%03d.jpg' % img_i
+        
+        if os.path.exists('img_align_celeba/'+f):
+            continue
 
         # and get the url with that string appended the end
         url = 'https://s3.amazonaws.com/cadl/celeb-align/' + f
